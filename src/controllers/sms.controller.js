@@ -108,17 +108,8 @@ const importExcelData = asyncHandler(async (req, res, next) => {
         }
         return newRow;
     });
-
-    console.log(data)
-    for (let test of data) {
-        isNotNull(test.fio, test.phone, test.summa);
-        isValidPhoneNumber(test.phone);
-    }
-
-    return res.status(200).json({
-        success: true,
-        data: data
-    })
+    const result_data = validationResponse(smsValidation, {data})
+    resFunc(res, 200, result_data.data)
 })
 
 module.exports = {

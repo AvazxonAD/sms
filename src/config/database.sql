@@ -16,6 +16,7 @@ CREATE TABLE reports (
     senddate DATE,
     tashkilot VARCHAR(255),
     user_id INTEGER REFERENCES users(id),
+    summa INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE

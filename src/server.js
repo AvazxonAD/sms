@@ -3,7 +3,7 @@ dotenv.config()
 const express = require('express');
 const cors = require('cors');
 const app = express()
-const colors = require('colors')
+require('colors')
 
 
 app.use(cors());
@@ -14,9 +14,9 @@ app.use(express.urlencoded({extended: false}))
 
 app.use(express.static('./public'))
 
-app.use('/auth', require('./routes/auth.route'))
-app.use('/sms', require('./routes/sms.route'))
-app.use('/report', require('./routes/report.router'))
+app.use('/auth', require('./routes/auth.routes'))
+app.use('/sms', require('./routes/sms.routes'))
+app.use('/report', require('./routes/report.routes'))
 
 app.use(require('./middlewares/errorHandler'))
 

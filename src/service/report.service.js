@@ -1,13 +1,12 @@
 const pool = require('../config/db')
-const asyncFunctionHandler = require('../middlewares/asyncFunctionHandler');
 const ErrorResponse = require('../utils/errorResponse');
 
-const createReport = async (client, sendMessage, user_id) => {
+const createReport = async (client, sendMessage, user_id, summa) => {
     try {
         await pool.query(
-            `INSERT INTO reports (client_fio, client_phone, report, senddate, user_id, tashkilot) 
-            VALUES ($1, $2, $3, $4, $5, $6)
-        `,[client.fio, client.phone, sendMessage, new Date(), user_id, client.tashkilot]);
+            `INSERT INTO reports (client_fio, client_phone, report, senddate, user_id, tashkilot, summa) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `,[client.fio, client.phone, sendMessage, new Date(), user_id, client.tashkilot, client.summa]);
     } catch (error) {
         throw new ErrorResponse(error, error.statusCode)
     }
@@ -22,24 +21,80 @@ const getAllDateReport = async (user_id) => {
     }
 }
 
-const getAllReportByDate = async (id, date, offset, limit ) => {
+const getAllReportByDate = async (id, offset, limit, date, phone, tashkilot) => {
     try {
+        const params = [id, offset, limit]
+        let dateFilter = ``
+        let phoneFilter = ``
+        let tashkilotFilter = ``
+        if(date){
+            dateFilter = `AND senddate = $${params.length + 1}`
+            params.push(date)
+        }
+        if(phone){
+            phoneFilter = `AND client_phone = $${params.length + 1}`
+            params.push(phone)
+        }
+        if(tashkilot === 'true'){
+            tashkilotFilter = `AND tashkilot IS NOT NULL`
+        }
+        if(tashkilot === 'false'){
+            tashkilotFilter = `AND tashkilot IS NULL`
+        }
         const smses = await pool.query(
             `SELECT id, report, client_fio, senddate, client_phone, tashkilot
             FROM reports
-            WHERE senddate = $1 AND user_id = $2
-            OFFSET $3 
-            LIMIT $4
-        `,[date, id, offset, limit]);
+            WHERE user_id = $1 AND isdeleted = false ${dateFilter} ${phoneFilter} ${tashkilotFilter}
+            OFFSET $2 
+            LIMIT $3
+        `,params);
         return smses.rows;
     } catch (error) {
         throw new ErrorResponse(error, error.statusCode)
     }
 }
 
+const getByIdReportService = async (user_id, id) => {
+    try {
+        const sms = await pool.query(
+            `SELECT id, report, client_fio, senddate, client_phone, tashkilot
+            FROM reports
+            WHERE user_id = $1 AND id = $2 AND isdeleted = false
+        `,[user_id, id]);
+        if(!sms.rows[0]){
+            throw new ErrorResponse('sms not found', 404)
+        }
+        return sms.rows[0];
+    } catch (error) {
+        throw new ErrorResponse(error, error.statusCode)
+    }
+}
+
+const deleteReportService = async (id) => {
+    try { 
+        await pool.query(`UPDATE reports SET isdeleted = true WHERE id = $1`, [id])        
+    } catch (error) {
+        throw new ErrorResponse(error, error.statusCode)
+    }
+}
+
+const getByPhoneReport = async (user_id, phone) => {
+    try {
+        const reports = await pool.query(`SELECT senddate, client_phone, tashkilot, summa
+            FROM reports
+            WHERE user_id = $1 AND client_phone = $2 AND isdeleted = false
+        `, [user_id, phone])
+        return reports.rows
+    } catch (error) {
+        throw new ErrorResponse(error, error.statusCode)
+    }
+}
 
 module.exports = {
     createReport,
     getAllDateReport,
-    getAllReportByDate
+    getAllReportByDate,
+    getByIdReportService,
+    deleteReportService,
+    getByPhoneReport
 }
