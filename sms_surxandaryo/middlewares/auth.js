@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('../middlewares/asyncHandler.js');
 const ErrorResponse = require('../utils/errorResponse.js');
-const { getUserById } = require('../service/users.service.js');
+const { getUserByIdService } = require('../service/users.service.js');
 
 module.exports = asyncHandler(async (req, res, next) => {
     let token;
@@ -19,7 +19,7 @@ module.exports = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse("Token muddati tugagan", 403));
     }
 
-    const user = await getUserById(decoded.id)
+    const user = await getUserByIdService(decoded.id)
     if (!user) {
         return next(new ErrorResponse("Siz tizimga kirmagansiz", 403));
     }

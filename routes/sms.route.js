@@ -9,7 +9,7 @@ const {
 const protect = require('../middlewares/auth')
 
 
-router.post('/send', protect, sendSms)
-router.post('/import/from/excel', protect, upload.single('file'), importExcelData)
+router.post('/', protect, sendSms)
+router.post('/excel', protect, upload.single('file'), importExcelData)
 
 module.exports = router

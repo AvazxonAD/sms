@@ -1,10 +1,10 @@
+const dotenv = require('dotenv')
+dotenv.config()
 const express = require('express');
 const cors = require('cors');
 const app = express()
 const colors = require('colors')
 
-const dotenv = require('dotenv')
-dotenv.config()
 
 app.use(cors());
   

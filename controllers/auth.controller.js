@@ -1,109 +1,92 @@
 const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middlewares/asyncHandler');
 const generateToken = require('../utils/ganerate.token');
 const bcrypt = require('bcrypt');
-const { 
-    getUserByUsername,
-    getUserById,
-    updateUser,
-    getPasswordById
+const { loginValidation, updateValidation } = require('../utils/validation/auth.validation')
+const { validationResponse } = require('../utils/validation.response')
+const { errorCatch } = require('../utils/errorCtach')
+const { resFunc } = require('../utils/resFunc')
+const {
+    getUserByLoginService,
+    getUserByIdService,
+    updateUserService,
+    getPasswordByIdService,
+    getBalanceService,
+    getSmsTextService
 } = require('../service/users.service')
 
-const { getBalance } = require('../service/balance.service')
-
-const {
-    checkValueString,
-} = require('../utils/check.functions')
-
 // login 
-const login = asyncHandler(async (req, res, next) => {
-    const { username, password } = req.body;
-
-    checkValueString(username, password)
-    
-    const user = await getUserByUsername(username)
-
-    if (!user) {
-        return next(new ErrorResponse("Username yoki parol xato kiritildi", 403));
+const login = async (req, res) => {
+    try {
+        const data = validationResponse(loginValidation, req.body)
+        const test = await getUserByLoginService(data.login)
+        if (!test) {
+            throw new ErrorResponse("Incorrect login or password entered", 403)
+        }
+        const match = await bcrypt.compare(data.password, test.password);
+        if (!match) {
+            throw new ErrorResponse("Incorrect login or password entered", 403)
+        }
+        const user = await getUserByIdService(test.id)
+        const token = generateToken(user);
+        const result = { user: user, token}
+        resFunc(res, 200, result)
+    } catch (error) {
+        errorCatch(error, res)
     }
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-        return next(new ErrorResponse("Username yoki parol xato kiritildi", 403));
-    }
-
-    const token = generateToken(user);
-
-    return res.status(200).json({
-        success: true,
-        data: user.username,
-        token
-    });
-});
+}
 
 // get profile 
-const getProfile = asyncHandler(async (req, res, next) => {
-    const user = await getUserById(req.user.id)
-
-    if (!user) {
-        return next(new ErrorResponse("Foydalanuvchi topilmadi", 404));
+const getProfile = async (req, res) => {
+    try {
+        const user = await getUserByIdService(req.user.id)
+        resFunc(res, 200, user)
+    } catch (error) {
+        errorCatch(error, res)
     }
-
-    res.status(200).json({
-        success: true,
-        data: user
-    });
-});
+}
 
 // update users 
-const update = asyncHandler(async (req, res, next) => {
-    const { username, oldPassword, newPassword } = req.body;
-    const id = req.user.id
-
-    checkValueString(username, oldPassword, newPassword)
-
-    const user = await getPasswordById(id)
-
-    if (!user) {
-        return next(new ErrorResponse("Foydalanuvchi topilmadi", 404));
+const update = async (req, res) => {
+    try {
+        const data = validationResponse(updateValidation, req.body)
+        const id = req.user.id
+        const user = await getPasswordByIdService(id)
+        const match = await bcrypt.compare(data.oldPassword, user.password);
+        if (!match) {
+            throw new ErrorResponse("Incorrect password entered", 403)
+        }
+        const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+        const result = await updateUserService(data.username, hashedPassword, id, data.login)
+        resFunc(res, 200, result)
+    } catch (error) {
+        errorCatch(error, res)
     }
+}
 
-    const match = await bcrypt.compare(oldPassword, user.password);
-    if (!match) {
-        return next(new ErrorResponse("Eski parol noto'g'ri", 403));
+// get balance
+const getBalance = async (req, res) => {
+    try {
+        const balance = await getBalanceService(req.user.id)
+        resFunc(res, 200, balance)
+    } catch (error) {
+        errorCatch(error, res)
     }
-    
-    /*const regex = /^(?=.*[a-zA-Z])(?=.*\d)[^\s]{8,}$/;
-    if (!regex.test(newPassword)) {
-        return next(new ErrorResponse("Parol kamida 8 ta belgidan iborat bo'lishi, harflar va raqamlarni o'z ichiga olishi kerak", 400));
-    }*/
+}
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    const result = await updateUser(username, hashedPassword, id)
-    if(!result){
-        return next(new ErrorResponse("Server xatolik. Malumot yangilanmadi", 500))
+// get sms text 
+const getSmsText = async (req, res) => {
+    try {
+        const sms_text = await getSmsTextService(req.user.id)
+        resFunc(res, 200, sms_text)
+    } catch (error) {
+        errorCatch(error, res)
     }
-    
-    return res.status(200).json({
-        success: true,
-        data: "Muvaffaqiyatli yangilandi"
-    });
-});
-
-// get balanc
-const getBalanc = asyncHandler(async (req, res, next) => {
-    const balance = await getBalance()
-    
-    res.status(200).json({
-        success: true,
-        data: balance
-    })
-})
+}
 
 module.exports = {
     login,
     getProfile,
     update,
-    getBalanc
+    getBalance,
+    getSmsText
 }

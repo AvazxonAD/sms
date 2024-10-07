@@ -3,10 +3,10 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const generateToken = require('../utils/ganerate.token');
 const bcrypt = require('bcrypt');
 const { 
-    getUserByUsername,
-    getUserById,
-    updateUser,
-    getPasswordById
+    getUserByLoginService,
+    getUserByIdService,
+    updateUserService,
+    getPasswordByIdService
 } = require('../service/users.service')
 
 const {
@@ -19,7 +19,7 @@ const login = asyncHandler(async (req, res, next) => {
 
     checkValueString(username, password)
     
-    const user = await getUserByUsername(username)
+    const user = await getUserByLoginService(username)
 
     if (!user) {
         return next(new ErrorResponse("Username yoki parol xato kiritildi", 403));
@@ -41,7 +41,7 @@ const login = asyncHandler(async (req, res, next) => {
 
 // get profile 
 const getProfile = asyncHandler(async (req, res, next) => {
-    const user = await getUserById(req.user.id)
+    const user = await getUserByIdService(req.user.id)
 
     if (!user) {
         return next(new ErrorResponse("Foydalanuvchi topilmadi", 404));
@@ -60,7 +60,7 @@ const update = asyncHandler(async (req, res, next) => {
 
     checkValueString(username, oldPassword, newPassword)
 
-    const user = await getPasswordById(id)
+    const user = await getPasswordByIdService(id)
 
     if (!user) {
         return next(new ErrorResponse("Foydalanuvchi topilmadi", 404));
@@ -78,7 +78,7 @@ const update = asyncHandler(async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    const result = await updateUser(username, hashedPassword, id)
+    const result = await updateUserService(username, hashedPassword, id)
     if(!result){
         return next(new ErrorResponse("Server xatolik. Malumot yangilanmadi", 500))
     }

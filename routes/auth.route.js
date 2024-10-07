@@ -5,15 +5,17 @@ const {
     login,
     getProfile,
     update,
-    getBalanc
+    getBalance,
+    getSmsText
 } = require('../controllers/auth.controller')
 
 const protect = require('../middlewares/auth')
 
 
 router.post('/login', login)
-router.get('/get', protect, getProfile)
-router.put('/update', protect, update)
-router.get('/get/balance', protect, getBalanc)
+    .get('/sms-string', protect, getSmsText)
+    .get('/balance', protect, getBalance)
+    .get('/', protect, getProfile)
+    .put('/', protect, update)
 
 module.exports = router
