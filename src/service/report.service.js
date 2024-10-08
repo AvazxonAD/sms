@@ -80,7 +80,7 @@ const deleteReportService = async (id) => {
 
 const getByPhoneReport = async (user_id, phone) => {
     try {
-        const reports = await pool.query(`SELECT senddate, client_phone, tashkilot, summa
+        const reports = await pool.query(`SELECT senddate, client_phone, tashkilot, summa, client_fio
             FROM reports
             WHERE user_id = $1 AND client_phone = $2 AND isdeleted = false
         `, [user_id, phone])

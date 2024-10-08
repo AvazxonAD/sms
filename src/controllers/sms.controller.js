@@ -6,7 +6,7 @@ const uuid = require('uuid')
 const generateTransmitAccessToken = require('../utils/access');
 const xlsx = require('xlsx');
 const { getBalanceService, getSmsTextService } = require('../service/users.service')
-const smsString = require('../utils/smsString');
+const { smsString } = require('../utils/smsString');
 const { createReport } = require("../service/report.service");
 const costSms = require('../utils/cost.sms')
 const { smsValidation } = require('../utils/validation/sms.validation')
@@ -108,7 +108,7 @@ const importExcelData = asyncHandler(async (req, res, next) => {
         }
         return newRow;
     });
-    const result_data = validationResponse(smsValidation, {data})
+    const result_data = validationResponse(smsValidation, { data })
     resFunc(res, 200, result_data.data)
 })
 
