@@ -2,7 +2,7 @@ const pool = require("../config/db");
 const ErrorResponse = require("../utils/errorResponse");
 const { returnLocalDate, returnDate } = require('../utils/date.functions');
 const { getAllDateReport, getAllReportByDate, getByIdReportService, deleteReportService, getByPhoneReport } = require("../service/report.service");
-const { queryValidation } = require('../utils/validation/report.validation');
+const { queryValidation, byPhoneValidation } = require('../utils/validation/report.validation');
 const { validationResponse } = require("../utils/validation.response");
 const { errorCatch } = require("../utils/errorCtach");
 const { resFunc } = require("../utils/resFunc");
@@ -75,9 +75,12 @@ exports.getElementById = async (req, res) => {
 exports.getByPhone = async (req, res) => {
   try {
     const user_id = req.user.id
-    const data = await getByPhoneReport(user_id, req.query.phone)
+    const { phone, date1, date2 } = validationResponse(byPhoneValidation, req.query)
+    const dt1 = returnDate(date1)
+    const dt2 = returnDate(date2)
+    const data = await getByPhoneReport(user_id, phone, dt1, dt2)
     const rows = data.map(report => {
-      const object = {...report}
+      const object = { ...report }
       object.senddate = returnLocalDate(object.senddate)
       delete object.client_fio
       delete object.tashkilot

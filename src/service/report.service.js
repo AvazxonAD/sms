@@ -78,12 +78,12 @@ const deleteReportService = async (id) => {
     }
 }
 
-const getByPhoneReport = async (user_id, phone) => {
+const getByPhoneReport = async (user_id, phone, date1, date2) => {
     try {
         const reports = await pool.query(`SELECT senddate, client_phone, tashkilot, summa, client_fio
             FROM reports
-            WHERE user_id = $1 AND client_phone = $2 AND isdeleted = false
-        `, [user_id, phone])
+            WHERE user_id = $1 AND client_phone = $2 AND isdeleted = false AND senddate BETWEEN $3 AND $4
+        `, [user_id, phone, date1, date2])
         return reports.rows
     } catch (error) {
         throw new ErrorResponse(error, error.statusCode)
