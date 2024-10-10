@@ -35,11 +35,15 @@ const getAllReportByDate = async (id, offset, limit, date, phone, tashkilot) => 
             phoneFilter = `AND client_phone = $${params.length + 1}`
             params.push(phone)
         }
+        if(tashkilot === 'false'){
+            tashkilotFilter = `AND tashkilot IS NULL`
+        }
         if(tashkilot === 'true'){
             tashkilotFilter = `AND tashkilot IS NOT NULL`
         }
-        if(tashkilot === 'false'){
-            tashkilotFilter = `AND tashkilot IS NULL`
+        if(tashkilot && tashkilot !== 'true' && tashkilot !== 'false'){
+            tashkilotFilter = `AND tashkilot ILIKE '%' || $${params.length + 1} || '%'`
+            params.push(tashkilot)
         }
         const smses = await pool.query(
             `SELECT id, report, client_fio, senddate, client_phone, tashkilot
