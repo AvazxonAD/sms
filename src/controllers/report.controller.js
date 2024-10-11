@@ -1,13 +1,23 @@
 const pool = require("../config/db");
 const ErrorResponse = require("../utils/errorResponse");
 const { returnLocalDate, returnDate } = require('../utils/date.functions');
-const { getAllDateReport, getAllReportByDate, getByIdReportService, deleteReportService, getByPhoneReport } = require("../service/report.service");
+const { getAllDateReport, getAllReportByDate, getByIdReportService, deleteReportService, getByPhoneReport,getUserInfoService } = require("../service/report.service");
 const { queryValidation, byPhoneValidation } = require('../utils/validation/report.validation');
 const { validationResponse } = require("../utils/validation.response");
 const { errorCatch } = require("../utils/errorCtach");
 const { resFunc } = require("../utils/resFunc");
 const { getReportString } = require('../service/sms.service');
 const { smsString, reportStrinng } = require("../utils/smsString");
+
+// get user info 
+exports.getUserInfo = async (req, res) => {
+  try {
+    const result = await getUserInfoService(req.user.id)
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
 
 // get all dates 
 exports.getAllDates = async (req, res) => {

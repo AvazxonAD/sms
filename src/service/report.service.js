@@ -94,11 +94,33 @@ const getByPhoneReport = async (user_id, phone, date1, date2) => {
     }
 }
 
+const getUserInfoService = async (user_id) => {
+    try {
+        const info = await pool.query(`
+            SELECT 
+                region_name, 
+                address, 
+                phone_number, 
+                fax, 
+                phone_number2, 
+                account_number, 
+                inn, 
+                boos_fio, 
+                worker_fio
+            FROM user_info WHERE user_id = $1
+        `, [user_id])
+        return info.rows[0]
+    } catch (error) {
+        throw new ErrorResponse(error, error.statusCode)
+    }
+}
+
 module.exports = {
     createReport,
     getAllDateReport,
     getAllReportByDate,
     getByIdReportService,
     deleteReportService,
-    getByPhoneReport
+    getByPhoneReport,
+    getUserInfoService
 }
