@@ -13,7 +13,8 @@ const { smsValidation } = require('../utils/validation/sms.validation')
 const { validationResponse } = require('../utils/validation.response');
 const { errorCatch } = require("../utils/errorCtach");
 const { resFunc } = require("../utils/resFunc");
-const { updateBalance } = require('../service/balance.service')
+const { updateBalance } = require('../service/balance.service');
+const path = require('path')
 
 // to send sms 
 const sendSms = asyncHandler(async (req, res, next) => {
@@ -112,7 +113,21 @@ const importExcelData = asyncHandler(async (req, res, next) => {
     resFunc(res, 200, result_data.data)
 })
 
+// generateExample funksiyasi
+const generateExample = asyncHandler(async (req, res) => {
+    const filePath = path.join(__dirname, '../../public/uploads/example.xlsx'); 
+    res.download(filePath, 'example-file.xlsx', (err) => {
+        if (err) {
+            res.status(500).send({
+                message: "Faylni yuklashda xatolik yuz berdi",
+                error: err.message
+            });
+        }
+    });
+});
+
 module.exports = {
     sendSms,
-    importExcelData
+    importExcelData,
+    generateExample
 }

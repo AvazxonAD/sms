@@ -5,7 +5,7 @@ const smsValidation = Joi.object({
         Joi.object({
             fio: Joi.string().required(),
             phone: Joi.string().pattern(/^998\d{9}$/).required(),
-            summa: Joi.number().required(),
+            summa: Joi.string().required(),
             tashkilot: Joi.string().allow(null)
         })
     ).required()
